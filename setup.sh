@@ -52,6 +52,15 @@ printf "\n ${YELLOW}Failed in Basic update and install\n ${RESET}"
 exit 1 
 fi 
 
+if sudo ufw enable; then 
+printf  "${GREEN}Firewall Enabled\n ${RESET}"
+sleep 4 
+else 
+printf "\n ${YELLOW}Firewall failed to enable\n ${RESET}"
+exit 1 
+sleep 4
+fi
+
 printf "\n ${CYAN}--------DEV-TOOLS----------- ${RESET}"
 printf "${CYAN}\n Basic Install is done, please select additional install options: \n ${RESET}"
 printf  "${CYAN}1/Full 2/ARM 3/AVR 4/Exit${RESET}" 
