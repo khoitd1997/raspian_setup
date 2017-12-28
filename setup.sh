@@ -35,7 +35,7 @@ if [ -f ${HOME}/we_rebooted ]; then #check if we rebooted
 
 printf "${GREEN}\n Reboot done, continuing the second part \n ${RESET}"
 sudo userdel -r pi 
-mkdir ${HOME}/Workspace
+mkdir ${HOME}/Workspace #Workspace for Visual Stuio Code 
 if [ $LITE -eq 1 ] ; then
     SOFTWARE_GENERAL_REPO="${SOFTWARE_GENERAL_REPO_NON_GUI}${SOFTWARE_WITH_GUI}"
 else 
@@ -87,6 +87,8 @@ case $option in #handle options
         exit 1;;
 esac
 
+rm -f ${HOME}/we_rebooted
+
 printf "\n ${CYAN} --------POST-INST-----------\n ${RESET}"
 printf  " ${GREEN} Script successfully executed \nPlease install these additional software if needed ${RESET} ${SOFTWARE_GENERAL_NONREPO} ${RESET}" 
 exit 0
@@ -97,7 +99,7 @@ printf "${GREEN}\n Not rebooted, executing the first part of setup script \n ${R
 sudo passwd -l root #disable root access
 cd
 sudo mkdir /home/backup
-sudo cp .profile .bashrc /home/backup
+sudo cp ${HOME}/.profile ${HOME}/.bashrc /home/backup
 
 sudo groups pi >> /home/backup/pi_group #output a file with all the pi group 
 
@@ -110,9 +112,9 @@ sudo usermod -a -G ${GROUPS}
 su - ${USER_NAME}
 cp /home/backup/.profile /home/background/.bashrc ${HOME}
 
-touch ${HOME}/we_rebooted
+touch ${HOME}/we_rebooted #create a file to mark that we rebooted
 
-printf "${GREEN}Commencing Reboot in 5 seconds ${RESET}"
+printf "${GREEN}First part done, commencing reboot in 5 seconds ${RESET}"
 
 sleep 5
 
