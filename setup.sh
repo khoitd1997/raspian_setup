@@ -88,7 +88,7 @@ case $option in #handle options
 esac
 
 rm -f ${HOME}/we_rebooted
-
+sudo rm -rf /home/backup/
 printf "\n ${CYAN} --------POST-INST-----------\n ${RESET}"
 printf  " ${GREEN} Script successfully executed \nPlease install these additional software if needed ${RESET} ${SOFTWARE_GENERAL_NONREPO} ${RESET}" 
 exit 0
@@ -96,13 +96,14 @@ exit 0
 #-------------------------------------------------------------------------------
 else
 printf "${GREEN}\n Not rebooted, executing the first part of setup script \n ${RESET}"
+
 sudo passwd -l root #disable root access
-cd
 sudo mkdir /home/backup
 sudo cp ${HOME}/.profile ${HOME}/.bashrc /home/backup
 
 sudo groups pi >> /home/backup/pi_group #output a file with all the pi group 
 
+#Handle creating new users
 GROUPS="$(groups pi | sed 's/pi : //; s/pi //; s/ /,/g')" 
 printf "${GREEN}Please input user name, no space: ${RESET}"
 read USER_NAME
