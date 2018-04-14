@@ -3,7 +3,7 @@
 #chmod u+x setup.sh will make the file executable for only owner
 
 #list of general utilities without GUI
-LITE=1 #0 for barebone raspbian, 1 for raspbian with desktop
+LITE=0 #0 for barebone raspbian, 1 for raspbian with desktop
 
 SOFTWARE_GENERAL_REPO_NON_GUI=" doxygen xclip checkinstall lm-sensors cmake valgrind gcc clang llvm emacs build-essential htop net-tools gnome-keyring  dos2unix ufw "
 
@@ -31,10 +31,7 @@ GREEN='\033[38;5;154m' #for general messages
 RESET='\033[0m' #for resetting the color 
 set -e 
 #-------------------------------------------------------------------------------
-if [ -f ${HOME}/we_rebooted ]; then #check if we rebooted
 
-printf "${GREEN}\n Reboot done, continuing the second part \n ${RESET}"
-sudo userdel -r pi 
 mkdir ${HOME}/Workspace #Workspace for Visual Stuio Code 
 if [ $LITE -eq 1 ] ; then
     SOFTWARE_GENERAL_REPO="${SOFTWARE_GENERAL_REPO_NON_GUI}${SOFTWARE_WITH_GUI}"
@@ -52,13 +49,11 @@ printf "\n ${YELLOW}Failed in Basic update and install\n ${RESET}"
 exit 1 
 fi 
 
-if sudo ufw enable; then 
+if sudo ufw enable >> ; then 
 printf  "${GREEN}Firewall Enabled\n ${RESET}"
-sleep 4 
 else 
 printf "\n ${YELLOW}Firewall failed to enable\n ${RESET}"
 exit 1 
-sleep 4
 fi
 
 printf "\n ${CYAN}--------DEV-TOOLS----------- ${RESET}"
@@ -87,38 +82,7 @@ case $option in #handle options
         exit 1;;
 esac
 
-rm -f ${HOME}/we_rebooted
-sudo rm -rf /home/backup/
 printf "\n ${CYAN} --------POST-INST-----------\n ${RESET}"
 printf  " ${GREEN} Script successfully executed \nPlease install these additional software if needed ${RESET} ${SOFTWARE_GENERAL_NONREPO} ${RESET}" 
 exit 0
 
-#-------------------------------------------------------------------------------
-else
-printf "${GREEN}\n Not rebooted, executing the first part of setup script \n ${RESET}"
-
-sudo passwd -l root #disable root access
-sudo mkdir /home/backup
-sudo cp ${HOME}/.profile ${HOME}/.bashrc /home/backup
-
-sudo groups pi >> /home/backup/pi_group #output a file with all the pi group 
-
-#Handle creating new users
-GROUPS="$(groups pi | sed 's/pi : //; s/pi //; s/ /,/g')" 
-printf "${GREEN}Please input user name, no space: ${RESET}"
-read USER_NAME
-sudo adduser ${USER_NAME} 
-sudo usermod -a -G ${GROUPS}
-
-su - ${USER_NAME}
-cp /home/backup/.profile /home/background/.bashrc ${HOME}
-
-touch ${HOME}/we_rebooted #create a file to mark that we rebooted
-
-printf "${GREEN}First part done, commencing reboot in 5 seconds ${RESET}"
-
-sleep 5
-
-sudo reboot 
-
-fi
