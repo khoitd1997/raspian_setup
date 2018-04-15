@@ -10,7 +10,7 @@ set -e
 
 # change keyboard layout to make sure the rest of installation is correct
 sudo sed -i '/XKBLAYOUT/d' /etc/default/keyboard
-echo XKBLAYOUT=\"us\" | sudo tee /etc/default/keyboard
+echo XKBLAYOUT=\"us\" | sudo tee -a /etc/default/keyboard
 
 
 #Handle creating new users
@@ -32,4 +32,6 @@ sudo killall -u pi
 sudo deluser --remove-home pi
 sudo groupdel pi
 
-printf "${GREEN}\nDone Creating user and deleting pi user${RESET}"
+printf "${GREEN}\nDone Creating user and deleting pi user, rebooting in 5 seconds${RESET}"
+sleep 5
+reboot

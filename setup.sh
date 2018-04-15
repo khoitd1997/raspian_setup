@@ -1,7 +1,6 @@
 #!/bin/bash
 
 #list of general utilities without GUI
-IS_EMBEDDED=0 #0 for barebone raspbian, 1 for raspbian with desktop
 
 # Needed by both embedded and non embedded
 SOFTWARE_UNIVERSAL=" checkinstall lm-sensors cmake gcc clang llvm build-essential htop net-tools gnome-keyring dos2unix ufw python3 python2"
@@ -10,7 +9,7 @@ SOFTWARE_UNIVERSAL=" checkinstall lm-sensors cmake gcc clang llvm build-essentia
 SOFTWARE_EMBEDDED_LINUX=" "
 
 #list of software with GUI
-SOFTWARE_WITH_GUI=" valgrind doxygen xclip gksu terminator guake ddd evince synaptic psensor gufw emacs "
+SOFTWARE_WITH_GUI=" valgrind doxygen xclip gksu terminator guake ddd evince synapt-getic psensor gufw emacs "
 
 #all tool chains and utilities
 ARM_TOOLCHAIN="gdb-arm-none-eabi openocd qemu gcc-arm-none-eabi"
@@ -37,21 +36,32 @@ if [ ${USER} = pi ] || [ ${USER} = root ]; then
   exit 1
 fi
 
-printf  "${GREEN}\nInstalling Universal Software\n${RESET}"
+printf  "${GREEN}\nGUI version?(y/n)\n${RESET}"
+read option
 
-sudo apt-get update >> /dev/null
-sudo apt-get dist-upgrade -y >> /dev/null
-sudo apt-get install ${SOFTWARE_UNIVERSAL} -y >> /dev/null
-
-if [ $IS_EMBEDDED -eq 1 ] ; then
-    printf  "${GREEN}\nInstalling Software For GUI version\n${RESET}"
-    sudo apt-get install ${SOFTWARE_WITH_GUI} -y >> /dev/null
-    mkdir ${HOME}/Workspace #Workspace for Visual Stuio Code
+if [ ${option} = y ]; then
+  IS_EMBEDDED = 1
 else
-    printf  "${GREEN}\nInstalling Software For Embedded version\n${RESET}"
-    sudo apt-get install ${SOFTWARE_EMBEDDED_LINUX} -y >> /dev/null
+  IS_EMBEDDED = 0
 fi
 
+printf  "${GREEN}\nInstalling Universal Software\n${RESET}"
+
+# setup wifi
+printf "network={\nssid=\"\"\npsk=\"\"\n}\ncountry=US
+\n" | sudo tee -a /etc/wpa_supplicant/wpa_supplicant.conf
+printf  "${GREEN}\nJumping to wifi Config file in 5 seconds\n${RESET}"
+sleep 5
+sudo nano /etc/wpa_supplicant/wpa_supplicant.conf
+wpa_cli -i wlan0 reconfigure
+
+# universal software install
+sudo apt-get update >> /dev/null
+sudo apt-get dist-upgrade -y >> /dev/null
+sudo apt-get update >> /dev/null
+sudo apt-get install ${SOFTWARE_UNIVERSAL} -y >> /dev/null
+
+# firewall check
 if sudo ufw enable ; then
 printf  "${GREEN}Firewall Enabled\n ${RESET}"
 else
@@ -60,34 +70,41 @@ exit 1
 fi
 
 if [ $IS_EMBEDDED -eq 1 ] ; then
-printf "\n ${CYAN}--------DEV-TOOLS----------- ${RESET}"
-printf "${GREEN}\n Basic Install is done, please select additional install options: \n ${RESET}"
-printf  "${GREEN}1/Full 2/ARM 3/AVR 4/Exit${RESET}"
-read option
+    printf  "${GREEN}\nInstalling Software For GUI version\n${RESET}"
+    sudo apt-get install ${SOFTWARE_WITH_GUI} -y >> /dev/null
+    mkdir ${HOME}/Workspace #Workspace for Visual Stuio Code
+    printf "\n ${CYAN}--------DEV-TOOLS----------- ${RESET}"
+    printf "${GREEN}\n Basic Install is done, please select additional install options: \n ${RESET}"
+    printf  "${GREEN}1/Full 2/ARM 3/AVR 4/Exit${RESET}"
+    read option
 
-case $option in #handle options
-    1) printf "${GREEN}\n installing $FULL\n ${RESET}"
-    if ! sudo apt-get install $FULL; then
-    printf "${YELLOW}\n Failed to install full package\n ${RESET}"
-    exit 1
-    fi;;
-    2) printf "${GREEN}\n installing $ARM_TOOLCHAIN\n ${RESET}"
-    if ! sudo apt-get install $ARM_TOOLCHAIN; then
-    printf "${YELLOW}\n Failed to install ARM toolchain\n ${RESET}"
-    exit 1
-    fi ;;
-    3) printf "\n ${GREEN}installing $AVR_ARDUINO_TOOLCHAIN\n ${RESET}"
-    if ! sudo apt-get install $AVR_ARDUINO_TOOLCHAIN; then
-    printf "\n ${YELLOW}Failed to install AVR toolchain\n ${RESET}"
-    exit 1
-    fi ;;
-    4) printf "\n ${GREEN}Exit\n ${RESET}";;
-    *) printf  "${YELLOW}\nInvalid options\n ${RESET}"
-        exit 1;;
-esac
+    case $option in #handle options
+        1) printf "${GREEN}\n installing $FULL\n ${RESET}"
+        if ! sudo apt-get install $FULL; then
+        printf "${YELLOW}\n Failed to install full package\n ${RESET}"
+        exit 1
+        fi;;
+        2) printf "${GREEN}\n installing $ARM_TOOLCHAIN\n ${RESET}"
+        if ! sudo apt-get install $ARM_TOOLCHAIN; then
+        printf "${YELLOW}\n Failed to install ARM toolchain\n ${RESET}"
+        exit 1
+        fi ;;
+        3) printf "\n ${GREEN}installing $AVR_ARDUINO_TOOLCHAIN\n ${RESET}"
+        if ! sudo apt-get install $AVR_ARDUINO_TOOLCHAIN; then
+        printf "\n ${YELLOW}Failed to install AVR toolchain\n ${RESET}"
+        exit 1
+        fi ;;
+        4) printf "\n ${GREEN}Exit\n ${RESET}";;
+        *) printf  "${YELLOW}\nInvalid options\n ${RESET}"
+            exit 1;;
+    esac
+else
+        printf  "${GREEN}\nInstalling Software For Embedded version\n${RESET}"
+        sudo apt-get install ${SOFTWARE_EMBEDDED_LINUX} -y >> /dev/null
 fi
 
 printf "\n ${CYAN} --------POST-INST-----------\n ${RESET}"
+
 if [ $IS_EMBEDDED -eq 1 ] ; then
 printf  " ${GREEN} Script successfully executed \nPlease install these additional software if needed ${RESET} ${SOFTWARE_GENERAL_NONREPO} ${RESET}"
 fi
