@@ -9,7 +9,7 @@ SOFTWARE_UNIVERSAL=" checkinstall lm-sensors cmake gcc clang llvm build-essentia
 SOFTWARE_EMBEDDED_LINUX=" "
 
 #list of software with GUI
-SOFTWARE_WITH_GUI=" valgrind doxygen xclip gksu terminator guake ddd evince synapt-getic psensor gufw emacs "
+SOFTWARE_WITH_GUI=" valgrind doxygen xclip gksu terminator guake ddd evince synaptic psensor gufw emacs "
 
 #all tool chains and utilities
 ARM_TOOLCHAIN="gdb-arm-none-eabi openocd qemu gcc-arm-none-eabi"
